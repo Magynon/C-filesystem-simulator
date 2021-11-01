@@ -1,0 +1,6 @@
+mkdir Costel
+touch Diana
+mkdir Daniela
+touch Magy
+ls
+stop
