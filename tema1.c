@@ -26,6 +26,7 @@ typedef struct Instruction{
 
 void freeSystem(Dir *target){
 	// go thru its children directories
+	
 	Dir *tmp = target->head_children_dirs;
 	Dir *delD;
 	while(tmp){
@@ -35,7 +36,7 @@ void freeSystem(Dir *target){
 		free(delD->name);
 		free(delD);
 	}
-
+	
 	// free files files
 	File *tmp1 = target->head_children_files;
 	File *del;
@@ -49,7 +50,7 @@ void freeSystem(Dir *target){
 
 void tabPrinter(int n){
 	for(int i = 0; i < n; i++){
-		printf("\t");
+		printf("    ");
 	}
 }
 
@@ -163,6 +164,7 @@ void rm (Dir* parent, char* name) {
 		if(strcmp(tmp->name, name) ==  0){
 			del = tmp;
 			parent->head_children_files = tmp->next;
+			free(del->name);
 			free(del);
 			return;
 		}
@@ -171,6 +173,7 @@ void rm (Dir* parent, char* name) {
 			if(strcmp(tmp->next->name, name) ==  0){
 				del = tmp->next;
 				tmp->next = tmp->next->next;
+				free(del->name);
 				free(del);
 				return;
 			}
@@ -190,6 +193,7 @@ void rmdir (Dir* parent, char* name) {
 			freeSystem(tmp);
 			del = tmp;
 			parent->head_children_dirs = tmp->next;
+			free(del->name);
 			free(del);
 			return;
 		}
@@ -199,6 +203,7 @@ void rmdir (Dir* parent, char* name) {
 				freeSystem(tmp->next);
 				del = tmp->next;
 				tmp->next = tmp->next->next;
+				free(del->name);
 				free(del);
 				return;
 			}
@@ -206,7 +211,7 @@ void rmdir (Dir* parent, char* name) {
 		}
 	}
 	
-	printf("Could not find the directory\n");
+	printf("Could not find the dir\n");
 }
 
 void cd(Dir** target, char *name) {
@@ -258,7 +263,7 @@ void stop (Dir* target) {
 
 void tree (Dir* target, int level) {
 	// print parent dir's name
-	if(strcmp(target->name, "home") != 0){
+	if(level != -1){
 		tabPrinter(level);
 		printf("%s\n", target->name);
 	}
@@ -288,51 +293,83 @@ void mv(Dir* parent, char *oldname, char *newname) {
 		// when directory in question is found
 		if(strcmp(tmp->name, oldname) ==  0){
 			Dir *tmp1 = parent->head_children_dirs;
+			File *tmp11 = parent->head_children_files;
 
 			// check if newname doesnt already exist
 			if(tmp1){
 				if(strcmp(tmp1->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
-			}
-			while(tmp1->next){
+				
+				while(tmp1->next){
 				if(strcmp(tmp1->next->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
 				tmp1 = tmp1->next;
 			}
-
+			}
+			
+			if(tmp11){
+				if(strcmp(tmp11->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				while(tmp11->next){
+				if(strcmp(tmp11->next->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				tmp11 = tmp11->next;
+			}
+			}
+			
 			strcpy(tmp->name, newname);
-			parent->head_children_dirs = tmp->next;
+			parent->head_children_dirs = (tmp->next == NULL) ? tmp : tmp->next;
+			if(tmp->next != NULL){
+				tmp->next = NULL;
+				tmp1->next = tmp;
+			}
 			tmp->next = NULL;
-			tmp1->next = tmp;
 			return;
 		}
-		tmp = tmp->next;
-	}
-	
-	while(tmp->next){
+		while(tmp->next){
 
 		// when directory in question is found
 		if(strcmp(tmp->next->name, oldname) ==  0){
 			Dir *tmp1 = parent->head_children_dirs;
+			File *tmp11 = parent->head_children_files;
 
 			// check if newname doesnt already exist
 			if(tmp1){
 				if(strcmp(tmp1->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
-			}
-			while(tmp1->next){
+				while(tmp1->next){
 				if(strcmp(tmp1->next->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
 				tmp1 = tmp1->next;
 			}
+			}
+			
+			if(tmp11){
+				if(strcmp(tmp11->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				while(tmp11->next){
+				if(strcmp(tmp11->next->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				tmp11 = tmp11->next;
+			}
+			}
+			
 
 			tmp2 = tmp->next;
 			strcpy(tmp2->name, newname);
@@ -344,23 +381,32 @@ void mv(Dir* parent, char *oldname, char *newname) {
 		tmp = tmp->next;
 	}
 	if(tmp->next == NULL){
-		// when file in question is found
+		// when directory in question is found
 		if(strcmp(tmp->name, oldname) ==  0){
-			File *tmp1 = parent->head_children_files;
+			Dir *tmp1 = parent->head_children_dirs;
+			File *tmp11 = parent->head_children_files;
 
 			// check if newname doesnt already exist
 			while(tmp1){
 				if(strcmp(tmp1->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
 				tmp1 = tmp1->next;
+			}
+			while(tmp11){
+				if(strcmp(tmp11->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				tmp11 = tmp11->next;
 			}
 
 			strcpy(tmp->name, newname);
 			return;
 		}
 		tmp = tmp->next;
+	}
 	}
 
 	// check if file already exists
@@ -371,21 +417,37 @@ void mv(Dir* parent, char *oldname, char *newname) {
 		// when file in question is found
 		if(strcmp(tmpF->name, oldname) ==  0){
 			File *tmp1F = parent->head_children_files;
+			Dir *tmp11F = parent->head_children_dirs;
 
 			// check if newname doesnt already exist
 			if(tmp1F){
 				if(strcmp(tmp1F->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
-			}
-			while(tmp1F->next){
+				while(tmp1F->next){
 				if(strcmp(tmp1F->next->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
 				tmp1F = tmp1F->next;
 			}
+			}
+			
+			if(tmp11F){
+				if(strcmp(tmp11F->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				while(tmp11F->next){
+				if(strcmp(tmp11F->next->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				tmp11F = tmp11F->next;
+			}
+			}
+			
 
 			strcpy(tmpF->name, newname);
 			parent->head_children_files = tmpF->next;
@@ -393,29 +455,42 @@ void mv(Dir* parent, char *oldname, char *newname) {
 			tmp1F->next = tmpF;
 			return;
 		}
-		tmpF = tmpF->next;
-	}
-	
-	while(tmpF->next){
+		while(tmpF->next){
 
 		// when file in question is found
 		if(strcmp(tmpF->next->name, oldname) ==  0){
 			File *tmp1F = parent->head_children_files;
+			Dir *tmp11F = parent->head_children_dirs;
 
 			// check if newname doesnt already exist
 			if(tmp1F){
 				if(strcmp(tmp1F->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
-			}
-			while(tmp1F->next){
+				while(tmp1F->next){
 				if(strcmp(tmp1F->next->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
 				tmp1F = tmp1F->next;
 			}
+			}
+			
+			if(tmp11F){
+				if(strcmp(tmp11F->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				while(tmp11F->next){
+				if(strcmp(tmp11F->next->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				tmp11F = tmp11F->next;
+			}
+			}
+			
 
 			tmp2F = tmpF->next;
 			strcpy(tmp2->name, newname);
@@ -430,14 +505,22 @@ void mv(Dir* parent, char *oldname, char *newname) {
 		// when file in question is found
 		if(strcmp(tmpF->name, oldname) ==  0){
 			File *tmp1F = parent->head_children_files;
+			Dir *tmp11F = parent->head_children_dirs;
 
 			// check if newname doesnt already exist
 			while(tmp1F){
 				if(strcmp(tmp1F->name, newname) == 0){
-					printf("File/Directory already exists\n");
+					printf("File/Director already exists\n");
 					return;
 				}
 				tmp1F = tmp1F->next;
+			}
+			while(tmp11F){
+				if(strcmp(tmp11F->name, newname) == 0){
+					printf("File/Director already exists\n");
+					return;
+				}
+				tmp11F = tmp11F->next;
 			}
 
 			strcpy(tmpF->name, newname);
@@ -445,7 +528,9 @@ void mv(Dir* parent, char *oldname, char *newname) {
 		}
 		tmpF = tmpF->next;
 	}
-	printf("File/Directory not found\n");
+	}
+	
+	printf("File/Director not found\n");
 }
 
 Instruction* parser(char *str){
@@ -483,7 +568,7 @@ Instruction* parser(char *str){
 }
 
 int main (int argc, char *argv[]) {
-	FILE *f = fopen(argv[1], "r");
+	// FILE *f = fopen(argv[1], "r");
 	char *str = (char*)malloc(MAX_INPUT_LINE_SIZE);
 	Dir *ROOT = root("home");
 	Dir *currentDir = ROOT;
@@ -491,7 +576,7 @@ int main (int argc, char *argv[]) {
 	do
 	{
 		// reads instructions one-by-one
-		fgets(str, MAX_INPUT_LINE_SIZE, f);	
+		fgets(str, MAX_INPUT_LINE_SIZE, stdin);	
 
 		// parsing the input file
 		Instruction *instruction = parser(str);
@@ -501,6 +586,7 @@ int main (int argc, char *argv[]) {
 		if(strcmp(instruction->cmd, "stop") == 0){
 			stop(ROOT);
 			free(instruction->arg1);
+			free(instruction->arg2);
 			free(instruction->cmd);
 			free(instruction);
 			break;
@@ -525,7 +611,7 @@ int main (int argc, char *argv[]) {
 		}
 		else if(strcmp(instruction->cmd, "pwd") == 0){
 			char* path = pwd(currentDir);
-			printf("PATH: %s\n", path);
+			printf("%s\n", path);
 			free(path);
 		}
 		else if(strcmp(instruction->cmd, "tree") == 0){
@@ -535,12 +621,13 @@ int main (int argc, char *argv[]) {
 			mv(currentDir, instruction->arg1, instruction->arg2);
 		}
 		free(instruction->arg1);
+		free(instruction->arg2);
 		free(instruction->cmd);
 		free(instruction);
 	} while (1);
 
 	free(str);
-	fclose(f);
+	// fclose(f);
 
 	return 0;
 }
