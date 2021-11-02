@@ -2,5 +2,15 @@ mkdir Costel
 touch Diana
 mkdir Daniela
 touch Magy
-ls
+cd Costel
+mkdir Mamaia
+touch Tataia
+cd ..
+cd Daniela
+mkdir Bunica
+touch Bunicu
+cd ..
+tree
+mv Costel Tata
+tree
 stop
